@@ -17,17 +17,17 @@ jobs:
       - name: List all files for debugging
         run: ls -R .
 
-      # Step 3: Copy both frontend and backend files via SSH
+      # Step 3: Copy files via SSH to the EC2 instance
       - name: Copy frontend and backend via SSH
         uses: appleboy/scp-action@v0.1.5
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "./*"  # This will copy the entire repository; adjust if needed
+          source: "./*"  # Copy the entire repository or adjust as needed
           target: "/home/ec2-user/deployment-directory/"
 
-      # Step 4: Run deployment scripts for both frontend and backend
+      # Step 4: Run deployment script for frontend and backend on the EC2 instance
       - name: Run deployment script on EC2
         uses: appleboy/ssh-action@v0.1.5
         with:
@@ -35,15 +35,14 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Navigate to backend and install dependencies
+            # Navigate to the backend directory, install dependencies, and build
             cd /home/ec2-user/deployment-directory/backend
             npm install
             npm run build
-            pm2 restart backend-app-name  # Replace with your process manager and app name
-            
-            # Navigate to frontend and install dependencies
+            pm2 restart backend-app-name  # Replace with your actual process manager and app name
+
+            # Navigate to the frontend directory, install dependencies, and build
             cd /home/ec2-user/deployment-directory/frontend
             npm install
             npm run build
-            pm2 serve build 3000 --name frontend-app-name  # Or your preferred method to serve the frontend
- 
+            pm2 serve build 3000 --name frontend-app-name  # Adjust this command as needed for serving the frontend
