@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 export const dbConnection = () => {
   mongoose
-    .connect(process.env.MONGO_URI, {
-      dbName: "RESERVATIONS",
+    .connect(mongodb+srv://ranjithbujala:uwlaNbFKOWKghMvg@cluster0.8zpa3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0, {
+      dbName: "books",
     })
     .then(() => {
       console.log("Connected to database!");
