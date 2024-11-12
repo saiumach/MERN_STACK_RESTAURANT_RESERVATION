@@ -3,23 +3,46 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main
+      - main  # The branch to watch for changes
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      # Step 1: Checkout code from the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: List files for debugging
-        run: ls -R path/to/your/files  # Add this step to confirm files are present
+      # Step 2: List all files in the workspace to verify directory structure
+      - name: List all files for debugging
+        run: ls -R .
 
-      - name: Copy files via SSH
+      # Step 3: Copy both frontend and backend files via SSH
+      - name: Copy frontend and backend via SSH
         uses: appleboy/scp-action@v0.1.5
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "path/to/your/files/*"  # Adjust to the correct path
+          source: "./*"  # This will copy the entire repository; adjust if needed
           target: "/home/ec2-user/deployment-directory/"
+
+      # Step 4: Run deployment scripts for both frontend and backend
+      - name: Run deployment script on EC2
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Navigate to backend and install dependencies
+            cd /home/ec2-user/deployment-directory/backend
+            npm install
+            npm run build
+            pm2 restart backend-app-name  # Replace with your process manager and app name
+            
+            # Navigate to frontend and install dependencies
+            cd /home/ec2-user/deployment-directory/frontend
+            npm install
+            npm run build
+            pm2 serve build 3000 --name frontend-app-name  # Or your preferred method to serve the frontend
